@@ -1,4 +1,6 @@
 Driver.class
+Matrix.class
 App.class
 Vertex.class
+DriverGraphic.class
 Face.class
