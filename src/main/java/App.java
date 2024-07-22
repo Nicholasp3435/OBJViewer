@@ -44,7 +44,7 @@ public class App extends Application {
 	this.inBox = new HBox(5);
 	this.inBox.setAlignment(Pos.CENTER);
 	this.inLbl = new Label("Enter any string and press enter");
-	this.inField = new TextField("Nic");
+	this.inField = new TextField("I am bored");
 	this.inField.setOnAction(e -> actionHandler());
 	this.inBtn = new Button("Click me to continue");
 	this.inBtn.setOnAction(e -> actionHandler());
