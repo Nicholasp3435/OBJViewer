@@ -1,7 +1,6 @@
 Driver.class
-OBJReader.class
-Face.class
 Matrix.class
 App.class
+OBJReader.class
 Vertex.class
-DriverGraphic.class
+Face.class

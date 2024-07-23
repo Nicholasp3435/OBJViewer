@@ -32,6 +32,7 @@ public class OBJReader {
 	try(BufferedReader br = new BufferedReader(new FileReader(fileName))) {
 	    String line;
 	    int i = 0;
+	    int j = 0;
 	    while ((line = br.readLine()) != null) {
 		String[] parsed = line.split("\\s+");
 		if (parsed[0].equals("v")) {
@@ -39,8 +40,15 @@ public class OBJReader {
 		    Double y = Double.parseDouble(parsed[2]);
 		    Double z = Double.parseDouble(parsed[3]);
 		    vertices[i] = new Vertex(x, y, z);
-		    System.out.println(vertices[i]);
+		    //System.out.println(vertices[i]);
 		    i++;
+		} else if (parsed[0].equals("f")) {
+		    int v1 = Integer.parseInt(parsed[1].split("/")[0]) - 1;
+		    int v2 = Integer.parseInt(parsed[2].split("/")[0]) - 1;
+		    int v3 = Integer.parseInt(parsed[3].split("/")[0]) - 1;
+		    faces[j] = new Face(v1, v2, v3);
+		    //System.out.println(faces[i]);
+		    j++;
 		}
 	    }
 	} catch (FileNotFoundException fnfe) {
@@ -48,27 +56,16 @@ public class OBJReader {
 	} catch (IOException ioe) {
 	    System.out.println(ioe.getMessage());
 	}
+    }
 
-	System.out.println();
+
 	
-	try(BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-	    String line;
-	    int i = 0;
-	    while ((line = br.readLine()) != null) {
-		String[] parsed = line.split("\\s+");
-		if (parsed[0].equals("f")) {
-		    Vertex v1 = vertices[Integer.parseInt(parsed[1]) - 1];
-		    Vertex v2 = vertices[Integer.parseInt(parsed[2]) - 1];
-		    Vertex v3 = vertices[Integer.parseInt(parsed[3]) - 1];
-		    faces[i] = new Face(v1, v2, v3);
-		    System.out.println(faces[i]);
-		    i++;
-		}
-	    }
-	} catch (FileNotFoundException fnfe) {
-	    System.out.println(fnfe.getMessage());  
-	} catch (IOException ioe) {
-	    System.out.println(ioe.getMessage());
-	}
+
+    public Vertex[] getVertices() {
+	return vertices;
+    }
+
+    public Face[] getFaces() {
+	return faces;
     }
 }

@@ -1,103 +1,72 @@
-
-
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.stage.Stage;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
+import javafx.stage.Stage;
 
 public class App extends Application {
 
-    private Canvas canvas;
-    private GraphicsContext gc;
-    private Label inLbl;
-    private TextField inField;
-    private HBox inBox;
-    private Button inBtn;
-    private VBox root;
-    private Stage stage;
-    private Scene scene;
-
-    public App() {
-	this.stage = null;
-	this.scene = null;
-	this.canvas = new Canvas(1000, 250);
-	this.gc = this.canvas.getGraphicsContext2D();
-	this.gc.setFill(Color.BLACK);
-	this.gc.fillRect(0, 0, this.canvas.getWidth(), this.canvas.getHeight());
-	this.gc.setTextAlign(TextAlignment.CENTER);
-	this.root = new VBox();
-	this.inBox = new HBox(5);
-	this.inBox.setAlignment(Pos.CENTER);
-	this.inLbl = new Label("Enter any string and press enter");
-	this.inField = new TextField("I am bored");
-	this.inField.setOnAction(e -> actionHandler());
-	this.inBtn = new Button("Click me to continue");
-	this.inBtn.setOnAction(e -> actionHandler());
-    } // GraphicsApp
-
     @Override
-    public void init() {
-	System.out.println("init() called");
-	connectNodes();
-	
-    } // init
+    public void start(Stage primaryStage) {
+        // Sample points (you can replace these with your own points)
+        double startX = 100.0;
+        double startY = 100.0;
+        double endX = 300.0;
+        double endY = 200.0;
 
-    @Override
-    public void start(Stage stage) {
-        this.stage = stage;
-        this.scene = new Scene(this.root);
-        this.stage.setOnCloseRequest(event -> Platform.exit());
-        this.stage.setTitle("EPIC Java Graphics");
-	this.stage.getIcons().add(new Image("file:resources/EPIC.png"));
-        this.stage.setScene(this.scene);
-        this.stage.sizeToScene();
-        this.stage.show();
-        Platform.runLater(() -> this.stage.setResizable(false));
-    } // start
+        // Create a canvas
+        Canvas canvas = new Canvas(600, 400);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
 
-    @Override
-    public void stop() {
-	System.out.println("stop() called");
-    } // stop
+        // Set initial color and width for drawing
+        gc.setStroke(Color.BLACK);
+        gc.setLineWidth(2);
 
+        // Draw a line between the points
 
-    public void connectNodes() {
-	this.inBox.getChildren().addAll(this.inLbl, this.inField, this.inBtn);
+	drawOrthographic(gc);
 
-	this.root.getChildren().addAll(this.inBox, this.canvas);
-    } // connectNodes
+        // Create a border pane layout
+        BorderPane root = new BorderPane();
+        root.setCenter(canvas);
 
-    public void drawText(GraphicsContext gc, double x, double y) {
-	this.gc.setFill(Color.BLACK);
-	this.gc.fillRect(0, 0, this.canvas.getWidth(), this.canvas.getHeight());
-	for (int i = 0; i < 13; i++) {
-	    double level = (i % 4.0) / 3;
-	    Color fillColor = Color.color(level, level, level);
-	    gc.setFill(fillColor);
-	    String text = this.inField.getText();
-	    gc.setFont(Font.font("Helvetica", FontWeight.BOLD, (i + 10.0) * 10));
-	    gc.fillText(text, x, y + 12 * i);
-	} // for
-    } // drawTexr
+        // Set up the scene
+        Scene scene = new Scene(root, 600, 400);
 
-    public void actionHandler() {
-	double x = this.canvas.getWidth() / 2;
-	double y = this.canvas.getHeight() / 3;
-	drawText(this.gc, x, y);
-    } // drawBtn
-} // GraphicsApp
+        // Set the stage
+        primaryStage.setTitle("OBJ Viewer");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private void drawLine(GraphicsContext gc, double startX, double startY, double endX, double endY) {
+        gc.strokeLine(startX, startY, endX, endY);
+    }
+
+    private void drawOrthographic(GraphicsContext gc) {
+	OBJReader obj = new OBJReader("dodecahedron.obj");
+	for (int i = 0; i < obj.faces.length; i++) {
+	    int v1 = obj.faces[i].v1;
+	    int v2 = obj.faces[i].v2;
+	    int v3 = obj.faces[i].v3;
+	    int tX = 300;
+	    int tY = 200;
+	    int s = 50;
+
+	    drawLine(gc, s*obj.vertices[v1].x + tX, s*obj.vertices[v1].y + tY,
+		     s*obj.vertices[v2].x + tX, s*obj.vertices[v2].y + tY);
+	    drawLine(gc, s*obj.vertices[v1].x + tX, s*obj.vertices[v1].y + tY,
+		     s*obj.vertices[v3].x + tX, s*obj.vertices[v3].y + tY);
+	    drawLine(gc, s*obj.vertices[v2].x + tX, s*obj.vertices[v2].y + tY,
+		     s*obj.vertices[v3].x + tX, s*obj.vertices[v3].y + tY);
+	    
+	}
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+}

@@ -73,4 +73,10 @@ public class Matrix {
 	     {0., 0., 1.}};
 	return rotate;
     }
+
+    public static Matrix orthographic(Matrix v) {
+	Matrix ortho = new Matrix(2,1);
+	ortho.matrix = new Double[][] {{v.matrix[0][0]},{v.matrix[1][0]}};
+	return ortho;
+    }
 }

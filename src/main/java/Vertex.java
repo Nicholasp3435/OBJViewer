@@ -1,8 +1,8 @@
 public class Vertex {
 
-    private double x;
-    private double y;
-    private double z;
+    public double x;
+    public double y;
+    public double z;
     private double[] coords;
     
     public Vertex(double x, double y, double z) {
