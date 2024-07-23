@@ -30,7 +30,7 @@ public class Matrix {
 	this.matrix = matrix;
     }
 
-    public double entry(int r, int c) {
+    public double getEntry(int r, int c) {
 	return this.matrix[r][c];
     }
 
@@ -92,10 +92,40 @@ public class Matrix {
 	return rotate;
     }
 
+    
+
     public Matrix orthoTranslate(Double x, Double y) {
 	Matrix trans = new Matrix(row, 1);
-	trans.setMatrix(new Double[][] {{this.entry(0,0) + x}, {this.entry(1,0) + y}});
+	trans.setMatrix(new Double[][] {{this.getEntry(0,0) + x}, {this.getEntry(1,0) + y}});
 	return trans;
+    }
+
+    public Matrix persTranslate(Double x, Double y, Double z) {
+	Matrix vect4 = new Matrix(4,1);
+	vect4.setMatrix(new Double[][] {{this.getEntry(0,0)}, {this.getEntry(1,0)}, {this.getEntry(2,0)}, {1.}});
+	try {
+	    Matrix trans = multiply(translation(x, y, z), vect4);
+	    return trans;
+	} catch (Exception e) {
+	    System.out.println(e.getMessage());
+	    return new Matrix(4,1);
+	}
+    }
+
+    public Matrix persDivide(Matrix perspective) {
+	try {
+	    Matrix pDiv = multiply(perspective, this);
+	    Matrix aDiv = new Matrix(4,1);
+	    aDiv.setMatrix(new Double[][]
+		{{pDiv.getEntry(0,0)/pDiv.getEntry(3,0)},
+		 {pDiv.getEntry(1,0)/pDiv.getEntry(3,0)},
+		 {pDiv.getEntry(2,0)/pDiv.getEntry(3,0)},
+		 {pDiv.getEntry(3,0)}});
+	    return aDiv;	      
+	} catch (Exception e) {
+	    System.out.println(e.getMessage());
+	    return new Matrix(4,1);
+	}
     }
 
     public Matrix scale(Double factor) {
@@ -122,7 +152,7 @@ public class Matrix {
 
     public static Matrix orthographic(Matrix v) {
 	Matrix ortho = new Matrix(2,1);
-	ortho.setMatrix(new Double[][] {{v.entry(0,0)}, {v.entry(1,0)}});
+	ortho.setMatrix(new Double[][] {{v.getEntry(0,0)}, {v.getEntry(1,0)}});
 	return ortho;
     }
 
@@ -135,5 +165,14 @@ public class Matrix {
 	     {0., 0., d, -d * zNear, 0.},
 	     {0., 0., 1., 0.}};
 	return pers;
+    }
+
+    public static Matrix translation(Double x, Double y, Double z) {
+	Matrix trans = new Matrix(4,4);
+	trans.setMatrix(new Double[][] {{1., 0., 0., x},
+					{0., 1., 0., y},
+					{0., 0., 1., z},
+					{0., 0., 0., 1.}});
+	return trans;
     }
 }
