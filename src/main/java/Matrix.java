@@ -74,6 +74,17 @@ public class Matrix {
 	return rotate;
     }
 
+    public Matrix rotate(Double yz, Double xz, Double xy) {
+	try {
+	    Matrix rotatedMatrixA = multiply(this, yzRotation(yz));
+	    Matrix rotatedMatrixB = multiply(rotatedMatrixA, xzRotation(xz));
+	    Matrix rotatedMatrixC = multiply(rotatedMatrixB, xyRotation(xy));
+	    return rotatedMatrixC;
+	} catch (Exception e) {
+	    return new Matrix(3, 3);
+	}
+    }
+
     public static Matrix orthographic(Matrix v) {
 	Matrix ortho = new Matrix(2,1);
 	ortho.matrix = new Double[][] {{v.matrix[0][0]},{v.matrix[1][0]}};

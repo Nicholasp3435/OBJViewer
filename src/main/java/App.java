@@ -5,32 +5,48 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.scene.control.Slider;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.scene.control.Label;
+
+import java.lang.Math;
 
 public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        // Sample points (you can replace these with your own points)
-        double startX = 100.0;
-        double startY = 100.0;
-        double endX = 300.0;
-        double endY = 200.0;
-
         // Create a canvas
         Canvas canvas = new Canvas(600, 400);
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
+	VBox sliderBox = new VBox(8);
+
+	HBox yzBox = new HBox(8);
+	HBox xzBox = new HBox(8);
+	HBox xyBox = new HBox(8);
+	
+	Slider yzSlider = new Slider(0, Math.PI * 2, 0);
+	Slider xzSlider = new Slider(0, Math.PI * 2, 0);
+	Slider xySlider = new Slider(0, Math.PI * 2, 0);
+
+	yzBox.getChildren().addAll(new Label("YZ Rotation"), yzSlider);
+	xzBox.getChildren().addAll(new Label("XZ Rotation"), xzSlider);
+	xyBox.getChildren().addAll(new Label("XY Rotation"), xySlider);
+	
+	sliderBox.getChildren().addAll(yzBox, xzBox, xyBox);
+	
         // Set initial color and width for drawing
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(2);
 
-        // Draw a line between the points
-
-	drawOrthographic(gc);
+	// draws an orthographic projection
+       	drawOrthographic(gc);
 
         // Create a border pane layout
         BorderPane root = new BorderPane();
         root.setCenter(canvas);
+	root.setBottom(sliderBox);
 
         // Set up the scene
         Scene scene = new Scene(root, 600, 400);
