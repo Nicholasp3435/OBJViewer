@@ -15,4 +15,8 @@ public class Face {
     public Vertex[] getVertices() {
 	return vertices;
     }
+
+    public String toString() {
+	return "(" + v1 + ", " + v2 + ", " + v3 + ")";
+    }
 } // Face

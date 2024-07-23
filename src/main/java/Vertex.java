@@ -1,18 +1,22 @@
 public class Vertex {
 
-    private int x;
-    private int y;
-    private int z;
-    private int[] coords;
+    private double x;
+    private double y;
+    private double z;
+    private double[] coords;
     
-    public Vertex(int x, int y, int z) {
+    public Vertex(double x, double y, double z) {
 	this.x = x;
 	this.y = y;
 	this.z = z;
-	this.coords = new int[] {x, y, z};
+	this.coords = new double[] {x, y, z};
     }
 
-    public int[] getCoords() {
+    public double[] getCoords() {
 	return coords;
+    }
+
+    public String toString() {
+	return "(" + x + ", " + y + ", " + z + ")"; 
     }
 } // Point
