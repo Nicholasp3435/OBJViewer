@@ -12,9 +12,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 
 import java.lang.Math;
-
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -38,6 +38,7 @@ public class App extends Application {
      *   zoomBox (label, zoomField)
      *   fileInBox (label, fileInput)
      *   updateBtn
+     *   infoLbl
      */
     private VBox controlBox;
     private VBox rotateBox;
@@ -63,22 +64,24 @@ public class App extends Application {
     private TextField zoomField;
     private HBox fileInBox;
     private TextField fileInput;
-    private Button updateBtn;
-
+    private Button loadBtn;
+    private Label infoLbl;
+    
     private Canvas canvas;
     private GraphicsContext gc;
 
-    private Label infoLbl;
-    
-    private BorderPane root;
+    private VBox root;
     private Scene scene;
     private Stage stage;
 
+    private OBJReader obj;    
+    
     public App() {
 	this.stage = null;
 	this.scene = null;
-	this.root = new BorderPane();
+	this.root = new VBox();
 	this.canvas = new Canvas(1000, 1000);
+	this.canvas.widthProperty().bind(this.root.widthProperty());
 	this.gc = canvas.getGraphicsContext2D();
 	this.gc.setStroke(Color.BLACK);
 	this.gc.setLineWidth(1);
@@ -106,9 +109,17 @@ public class App extends Application {
 	this.zoomField = new TextField("1");
 	this.fileInBox = new HBox();
 	this.fileInput = new TextField("yoshi.obj");
-	this.updateBtn = new Button("Update");
-	this.updateBtn.setOnAction(e -> updateHandler());
+	this.loadBtn = new Button("Load");
+	this.loadBtn.setOnAction(e -> loadHandler());
 	this.infoLbl = new Label("");
+
+	this.readOBJ("yoshi.obj");
+	
+	this.canvas.setOnMouseDragged(e -> {
+		this.xzSlider.setValue(Math.PI * 2 - (e.getSceneX() / this.canvas.getWidth() * Math.PI * 2));
+		this.yzSlider.setValue(Math.PI * 2 - (e.getSceneY() / this.canvas.getHeight() * Math.PI * 2));
+		this.updateHandler();
+	    });
     }
 
     @Override
@@ -121,7 +132,7 @@ public class App extends Application {
     public void start(Stage stage) {
 	this.scene = new Scene(this.root);
 
-	drawPerspective("yoshi.obj");
+	drawPerspective(obj.getVertices(), obj.getFaces());
 
 	this.stage = stage;
 	this.stage.setOnCloseRequest(e -> Platform.exit());
@@ -137,10 +148,8 @@ public class App extends Application {
     }
 
     private void connectNodes() {
-	this.root.setTop(this.infoLbl);
-	this.root.setCenter(this.canvas);
-	this.root.setBottom(this.controlBox);
-	this.controlBox.getChildren().addAll(this.rotateBox, this.transBox, this.panBox, this.zoomBox, this.fileInBox, this.updateBtn);
+	this.root.getChildren().addAll(this.canvas, this.controlBox);
+	this.controlBox.getChildren().addAll(this.rotateBox, this.transBox, this.panBox, this.zoomBox, this.fileInBox, this.loadBtn, this.infoLbl);
 	this.rotateBox.getChildren().addAll(this.xzSliderBox, this.yzSliderBox, this.xySliderBox);
 	this.xzSliderBox.getChildren().addAll(new Label("XZ Rotate: "), this.xzSlider);
 	this.yzSliderBox.getChildren().addAll(new Label("YZ Rotate: "), this.yzSlider);
@@ -243,30 +252,17 @@ public class App extends Application {
 
 	    drawTriangle(orthoVect1, orthoVect2, orthoVect3);
 	}
+	this.setInfoLbl("Loaded: " + this.fileInput.getText());
     }
 
-    public void drawPerspective(String file) {
+    public void drawPerspective(Vertex[] vertices, Face[] faces) {
 	
-	OBJReader obj;
 	Double transX;
 	Double transY;
 	Double transZ;
 	Double panX;
 	Double panY;
 	Double zoom;
-	
-	try {
-	    obj = new OBJReader(this.fileInput.getText());
-	} catch (FileNotFoundException fnfe) {
-	    this.setInfoLbl("File not found; " + fnfe.getMessage());
-	    return;
-	} catch (IOException ioe) {
-	    this.setInfoLbl("Error in file; " + ioe.getMessage());
-	    return;
-	} catch (ArrayIndexOutOfBoundsException aioobe) {
-	    this.setInfoLbl("Error in file; " + aioobe.getMessage());
-	    return;
-	}
 	
 	try {
 	    transX = Double.parseDouble(this.xTransField.getText());
@@ -290,8 +286,8 @@ public class App extends Application {
 	gc.setFill(Color.WHITE);
 	gc.fillRect(0,0, canvas.getWidth(), canvas.getHeight());
 
-	for (int i = 0; i < obj.faces.length; i++) {
-	    Vertex vert1 = obj.vertices[obj.faces[i].v1];
+	for (int i = 0; i < faces.length; i++) {
+	    Vertex vert1 = vertices[faces[i].v1];
 	    Matrix vect1 = new Matrix(3,1);
 	    vect1.setMatrix(new Double[][] {{vert1.x}, {vert1.y}, {vert1.z}});
 	    vect1 = vect1.rotate(yz, xz, xy);
@@ -301,7 +297,7 @@ public class App extends Application {
 	    orthoVect1 = orthoVect1.scale(zoom);
 	    orthoVect1 = orthoVect1.orthoTranslate(panX, panY);
 	    
-	    Vertex vert2 = obj.vertices[obj.faces[i].v2];
+	    Vertex vert2 = vertices[faces[i].v2];
 	    Matrix vect2 = new Matrix(3,1);
 	    vect2.setMatrix(new Double[][] {{vert2.x}, {vert2.y}, {vert2.z}});
 	    vect2 = vect2.rotate(yz, xz, xy);
@@ -311,7 +307,7 @@ public class App extends Application {
 	    orthoVect2 = orthoVect2.scale(zoom);
 	    orthoVect2 = orthoVect2.orthoTranslate(panX, panY);
 	    
-	    Vertex vert3 = obj.vertices[obj.faces[i].v3];
+	    Vertex vert3 = vertices[faces[i].v3];
 	    Matrix vect3 = new Matrix(3,1);
 	    vect3.setMatrix(new Double[][] {{vert3.x}, {vert3.y}, {vert3.z}});
 	    vect3 = vect3.rotate(yz, xz, xy);
@@ -323,14 +319,35 @@ public class App extends Application {
 
 	    drawTriangle(orthoVect1, orthoVect2, orthoVect3);
 	}
+	this.setInfoLbl("Loaded: " + this.fileInput.getText());
     }
 
     public static void main(String[] args) {
         launch(args);
     }
 
+    private void readOBJ(String file) {
+	try {
+	    this.obj = new OBJReader(this.fileInput.getText());
+	} catch (FileNotFoundException fnfe) {
+	    this.setInfoLbl("File not found; " + fnfe.getMessage());
+	    return;
+	} catch (IOException ioe) {
+	    this.setInfoLbl("Error in file; " + ioe.getMessage());
+	    return;
+	} catch (ArrayIndexOutOfBoundsException aioobe) {
+	    this.setInfoLbl("Error in file; " + aioobe.getMessage());
+	    return;
+	}	
+    }
+
     public void updateHandler() {
-	drawPerspective(fileInput.getText());
+	drawPerspective(obj.getVertices(), obj.getFaces());
+    }
+
+    private void loadHandler() {
+	readOBJ(fileInput.getText());
+	drawPerspective(obj.getVertices(), obj.getFaces());
     }
 
     private void setInfoLbl(String message) {
