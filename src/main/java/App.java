@@ -15,9 +15,14 @@ import javafx.application.Platform;
 
 import java.lang.Math;
 
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.ArrayIndexOutOfBoundsException;
+
 public class App extends Application {
 
-    /**
+    /** Tree structure
      *  controlBox
      *   rotateBox
      *    yzSliderBox (label, yzSlider)
@@ -63,6 +68,8 @@ public class App extends Application {
     private Canvas canvas;
     private GraphicsContext gc;
 
+    private Label infoLbl;
+    
     private BorderPane root;
     private Scene scene;
     private Stage stage;
@@ -71,7 +78,6 @@ public class App extends Application {
 	this.stage = null;
 	this.scene = null;
 	this.root = new BorderPane();
-	
 	this.canvas = new Canvas(1000, 1000);
 	this.gc = canvas.getGraphicsContext2D();
 	this.gc.setStroke(Color.BLACK);
@@ -102,6 +108,7 @@ public class App extends Application {
 	this.fileInput = new TextField("yoshi.obj");
 	this.updateBtn = new Button("Update");
 	this.updateBtn.setOnAction(e -> updateHandler());
+	this.infoLbl = new Label("");
     }
 
     @Override
@@ -130,6 +137,7 @@ public class App extends Application {
     }
 
     private void connectNodes() {
+	this.root.setTop(this.infoLbl);
 	this.root.setCenter(this.canvas);
 	this.root.setBottom(this.controlBox);
 	this.controlBox.getChildren().addAll(this.rotateBox, this.transBox, this.panBox, this.zoomBox, this.fileInBox, this.updateBtn);
@@ -164,9 +172,8 @@ public class App extends Application {
     }
 
     private void drawOrthographic() {
-
-	OBJReader obj = new OBJReader("yoshi.obj");
 	
+	OBJReader obj;
 	Double transX;
 	Double transY;
 	Double transZ;
@@ -175,22 +182,36 @@ public class App extends Application {
 	Double zoom;
 	
 	try {
-	    transX = Double.parseDouble(xTransField.getText());
-	    transY = Double.parseDouble(yTransField.getText());
-	    transZ = Double.parseDouble(zTransField.getText());
-	    panX = Double.parseDouble(xPanField.getText());
-	    panY = Double.parseDouble(yPanField.getText());
-	    zoom = Double.parseDouble(zoomField.getText());
-	} catch (NumberFormatException nfe) {
-	    System.out.println("non-parsable input\n" + nfe.getMessage());
+	    obj = new OBJReader(this.fileInput.getText());
+	} catch (FileNotFoundException fnfe) {
+	    this.setInfoLbl("File not found; " + fnfe.getMessage());
 	    return;
-	} catch (NullPointerException npe) {
-	    System.out.println("empty input\n" + npe.getMessage());
+	} catch (IOException ioe) {
+	    this.setInfoLbl("Error in file; " + ioe.getMessage());
+	    return;
+	} catch (ArrayIndexOutOfBoundsException aioobe) {
+	    this.setInfoLbl("Error in file; " + aioobe.getMessage());
 	    return;
 	}
-	Double yz = yzSlider.getValue();
-	Double xz = xzSlider.getValue();
-	Double xy = xySlider.getValue();
+	
+	try {
+	    transX = Double.parseDouble(this.xTransField.getText());
+	    transY = Double.parseDouble(this.yTransField.getText());
+	    transZ = Double.parseDouble(this.zTransField.getText());
+	    panX = Double.parseDouble(this.xPanField.getText());
+	    panY = Double.parseDouble(this.yPanField.getText());
+	    zoom = Double.parseDouble(this.zoomField.getText());
+	} catch (NumberFormatException nfe) {
+	    this.setInfoLbl("Non-parsable input; " + nfe.getMessage());
+	    return;
+	} catch (NullPointerException npe) {
+	    this.setInfoLbl("Empty input; " + npe.getMessage());
+	    return;
+	}
+	
+	Double yz = this.yzSlider.getValue();
+	Double xz = this.xzSlider.getValue();
+	Double xy = this.xySlider.getValue();
 
 	gc.setFill(Color.WHITE);
 	gc.fillRect(0,0, canvas.getWidth(), canvas.getHeight());
@@ -222,19 +243,30 @@ public class App extends Application {
 
 	    drawTriangle(orthoVect1, orthoVect2, orthoVect3);
 	}
-
     }
 
     public void drawPerspective(String file) {
-
-	OBJReader obj = new OBJReader(this.fileInput.getText());
 	
+	OBJReader obj;
 	Double transX;
 	Double transY;
 	Double transZ;
 	Double panX;
 	Double panY;
 	Double zoom;
+	
+	try {
+	    obj = new OBJReader(this.fileInput.getText());
+	} catch (FileNotFoundException fnfe) {
+	    this.setInfoLbl("File not found; " + fnfe.getMessage());
+	    return;
+	} catch (IOException ioe) {
+	    this.setInfoLbl("Error in file; " + ioe.getMessage());
+	    return;
+	} catch (ArrayIndexOutOfBoundsException aioobe) {
+	    this.setInfoLbl("Error in file; " + aioobe.getMessage());
+	    return;
+	}
 	
 	try {
 	    transX = Double.parseDouble(this.xTransField.getText());
@@ -244,12 +276,13 @@ public class App extends Application {
 	    panY = Double.parseDouble(this.yPanField.getText());
 	    zoom = Double.parseDouble(this.zoomField.getText());
 	} catch (NumberFormatException nfe) {
-	    System.out.println("non-parsable input\n" + nfe.getMessage());
+	    this.setInfoLbl("Non-parsable input; " + nfe.getMessage());
 	    return;
 	} catch (NullPointerException npe) {
-	    System.out.println("empty input\n" + npe.getMessage());
+	    this.setInfoLbl("Empty input; " + npe.getMessage());
 	    return;
 	}
+	
 	Double yz = this.yzSlider.getValue();
 	Double xz = this.xzSlider.getValue();
 	Double xy = this.xySlider.getValue();
@@ -298,5 +331,9 @@ public class App extends Application {
 
     public void updateHandler() {
 	drawPerspective(fileInput.getText());
+    }
+
+    private void setInfoLbl(String message) {
+	this.infoLbl.setText(message);
     }
 }
