@@ -274,8 +274,9 @@ public class App extends Application {
      * @param file The filename to read.
      */
     private void readOBJ(final String file) {
+	String modelFile = "models/" + file;
 	try {
-	    this.obj = new OBJReader(this.fileInput.getText());
+	    this.obj = new OBJReader(modelFile);
 	} catch (FileNotFoundException fnfe) {
 	    this.setInfoLbl("File not found; " + fnfe.getMessage());
 	} catch (IOException ioe) {
