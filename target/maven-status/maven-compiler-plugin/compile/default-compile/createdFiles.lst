@@ -1,6 +1,8 @@
-Matrix.class
-App.class
 Driver.class
 OBJReader.class
-Vertex.class
 Face.class
+App.class
+MatrixUtils/exception/DimensionMismatchException.class
+Vertex.class
+MatrixUtils/Matrix.class
+MatrixUtils/Vector.class

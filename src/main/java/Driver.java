@@ -1,7 +1,7 @@
 import javafx.application.Application;
 
 public class Driver {
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
 	try {
             Application.launch(App.class, args);
         } catch (UnsupportedOperationException e) {
