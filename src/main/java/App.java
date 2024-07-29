@@ -45,6 +45,7 @@ public class App extends Application {
     private HBox fileInBox;
     private TextField fileInput;
     private Button loadBtn;
+    private Button updateBtn;
     private Label infoLbl;
     
     private Canvas canvas;
@@ -91,6 +92,8 @@ public class App extends Application {
 	this.fileInput = new TextField("yoshi.obj");
 	this.loadBtn = new Button("Load");
 	this.loadBtn.setOnAction(e -> loadHandler());
+	this.updateBtn = new Button("Update");
+	this.updateBtn.setOnAction(e -> updateHandler());
 	this.infoLbl = new Label("");
 
 	this.readOBJ("yoshi.obj");
@@ -157,7 +160,7 @@ public class App extends Application {
     private void connectNodes() {
 	this.root.getChildren().addAll(this.canvas, this.controlBox);
 	this.controlBox.getChildren().addAll(this.rotateBox, this.transBox, this.panBox, this.zoomBox,
-					     this.fileInBox, this.loadBtn, this.infoLbl);
+					     this.fileInBox, this.loadBtn, this.updateBtn, this.infoLbl);
 	this.rotateBox.getChildren().addAll(this.xzSliderBox, this.yzSliderBox, this.xySliderBox);
 	this.xzSliderBox.getChildren().addAll(new Label("XZ Rotate: "), this.xzSlider);
 	this.yzSliderBox.getChildren().addAll(new Label("YZ Rotate: "), this.yzSlider);
@@ -279,7 +282,10 @@ public class App extends Application {
 	    this.obj = new OBJReader(modelFile);
 	    this.xPanField.setText("" + (this.canvas.getWidth() / 2));
 	    this.yPanField.setText("" + (this.canvas.getHeight() / 2));
-	    this.zTransField.setText("" + (this.obj.getFurthest().getZ() * 2));
+	    Vertex furthest = this.obj.getFurthest();
+	    Double distanceFurthest = Math.pow(Math.pow(furthest.getX(), 2) + Math.pow(furthest.getY(), 2) + Math.pow(furthest.getZ(), 2), 0.5);
+	    this.zTransField.setText("" + distanceFurthest * 2);
+	    this.zoomField.setText("" + (this.obj.getFurthest().distanceFromCenter() * 125));
 	} catch (FileNotFoundException fnfe) {
 	    this.setInfoLbl("File not found; " + fnfe.getMessage());
 	} catch (IOException ioe) {

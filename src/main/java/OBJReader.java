@@ -102,11 +102,12 @@ public class OBJReader {
 	Vertex furthest = new Vertex(0., 0., 0.);
 
 	for (int i = 0; i < vertices.length; i++) {
-	    if (vertices[i].distanceFromCenter() > furthest.distanceFromCenter()) {
+	    if (vertices[i].distanceFromCenter() >= furthest.distanceFromCenter()) {
 		furthest = vertices[i];
 	    }
 	}
 
+    System.out.println(furthest);
 	return furthest;
     }
 
