@@ -277,6 +277,9 @@ public class App extends Application {
 	String modelFile = "models/" + file;
 	try {
 	    this.obj = new OBJReader(modelFile);
+	    Vector center = this.obj.getCenter();
+	    this.xPanField.setText("" + (this.canvas.getWidth() / 2));
+	    this.yPanField.setText("" + (this.canvas.getHeight() / 2));
 	} catch (FileNotFoundException fnfe) {
 	    this.setInfoLbl("File not found; " + fnfe.getMessage());
 	} catch (IOException ioe) {

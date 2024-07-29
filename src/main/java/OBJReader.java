@@ -1,3 +1,4 @@
+import MatrixUtils.Vector;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
@@ -96,5 +97,23 @@ public class OBJReader {
     public int getFaceCount() {
 	return faceCount;
     } // getFaceCount
+
+    public Vector getCenter() {
+	Double xMean = 0.;
+	Double yMean = 0.;
+	Double zMean = 0.;
+
+	for (int i = 0; i < vertices.length; i++) {
+	    xMean += vertices[i].getX();
+	    yMean += vertices[i].getY();
+	    zMean += vertices[i].getZ();
+	}
+
+	xMean /= vertices.length;
+	yMean /= vertices.length;
+	zMean /= vertices.length;
+
+	return new Vector(3, new Double[][] {{xMean}, {yMean}, {zMean}});
+    }
     
 } // OBJReader
