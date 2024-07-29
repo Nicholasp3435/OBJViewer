@@ -98,6 +98,18 @@ public class OBJReader {
 	return faceCount;
     } // getFaceCount
 
+    public Vertex getFurthest() {
+	Vertex furthest = new Vertex(0., 0., 0.);
+
+	for (int i = 0; i < vertices.length; i++) {
+	    if (vertices[i].distanceFromCenter() > furthest.distanceFromCenter()) {
+		furthest = vertices[i];
+	    }
+	}
+
+	return furthest;
+    }
+
     public Vector getCenter() {
 	Double xMean = 0.;
 	Double yMean = 0.;

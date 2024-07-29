@@ -1,5 +1,6 @@
 import MatrixUtils.Vector;
 
+
 public class Vertex {
 
     /** The x component. */
@@ -62,6 +63,10 @@ public class Vertex {
      */
     public Vector toVector() {
 	return new Vector(3, new Double[][] {{this.x}, {this.y}, {this.z}});
+    }
+
+    public Double distanceFromCenter() {
+	return Math.pow(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2), 0.5);
     }
 
     @Override
