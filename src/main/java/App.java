@@ -95,14 +95,14 @@ public class App extends Application {
 	this.zoomBox = new HBox();
 	this.zoomField = new TextField("1");
 	this.fileInBox = new HBox();
-	this.fileInput = new TextField("yoshi.obj");
+	this.fileInput = new TextField("yoshi");
 	this.loadBtn = new Button("Load");
 	this.loadBtn.setOnAction(e -> loadHandler());
 	this.updateBtn = new Button("Update");
 	this.updateBtn.setOnAction(e -> updateHandler());
 	this.infoLbl = new Label("");
 
-	this.readOBJ("yoshi.obj");
+	this.readOBJ("yoshi");
 
 	VBox.setVgrow(canvas, Priority.ALWAYS);
 	
@@ -112,8 +112,8 @@ public class App extends Application {
 	
 	this.canvas.setOnMouseDragged(e -> {
 		Runnable task = () -> {
-		    double newXZValue = Math.PI * 2 - (e.getSceneX() / this.canvas.getWidth() * Math.PI * 2);
-		    double newYZValue = Math.PI * 2 - (e.getSceneY() / this.canvas.getHeight() * Math.PI * 2);
+		    Double newXZValue = Math.PI * 2 - (e.getSceneX() / this.canvas.getWidth() * Math.PI * 2);
+		    Double newYZValue = Math.PI * 2 - (e.getSceneY() / this.canvas.getHeight() * Math.PI * 2);
         
 		    Platform.runLater(() -> {
 			    this.xzSlider.setValue(newXZValue);
@@ -123,10 +123,17 @@ public class App extends Application {
 		};
 		runInNewThread(task, "MouseDraggedHandler");
 	    });
-
+	
 	this.canvas.setOnScroll(e -> {
-		this.zoomField.setText("" + (Double.parseDouble(this.zoomField.getText()) + e.getDeltaY()));
-		this.updateHandler();
+		Runnable task = () -> {
+		    Double newZoomValue = Double.parseDouble(this.zoomField.getText()) + e.getDeltaY();
+
+		    Platform.runLater(() -> {
+			    this.zoomField.setText("" + newZoomValue);
+			    this.updateHandler();
+			});
+		};
+		runInNewThread(task, "ScrollHandler");
 	    });
     } // App
 
@@ -288,7 +295,7 @@ public class App extends Application {
      * @param file The filename to read.
      */
     private void readOBJ(final String file) {
-	String modelFile = "models/" + file;
+	String modelFile = "models/" + file + ".obj";
 	try {
 	    this.obj = new OBJReader(modelFile);
 	    this.xPanField.setText("" + (this.canvas.getWidth() / 2));
