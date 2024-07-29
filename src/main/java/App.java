@@ -14,6 +14,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.scene.layout.Priority;
+import javafx.scene.input.ScrollEvent;
+
+
+
+
+
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -116,6 +122,11 @@ public class App extends Application {
 			});
 		};
 		runInNewThread(task, "MouseDraggedHandler");
+	    });
+
+	this.canvas.setOnScroll(e -> {
+		this.zoomField.setText("" + (Double.parseDouble(this.zoomField.getText()) + e.getDeltaY()));
+		this.updateHandler();
 	    });
     } // App
 
@@ -285,7 +296,7 @@ public class App extends Application {
 	    Vertex furthest = this.obj.getFurthest();
 	    Double distanceFurthest = Math.pow(Math.pow(furthest.getX(), 2) + Math.pow(furthest.getY(), 2) + Math.pow(furthest.getZ(), 2), 0.5);
 	    this.zTransField.setText("" + distanceFurthest * 2);
-	    this.zoomField.setText("" + (this.obj.getFurthest().distanceFromCenter() * 125));
+	    this.zoomField.setText("" + (this.obj.getFurthest().distanceFromCenter() * 100));
 	} catch (FileNotFoundException fnfe) {
 	    this.setInfoLbl("File not found; " + fnfe.getMessage());
 	} catch (IOException ioe) {

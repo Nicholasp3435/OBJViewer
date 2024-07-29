@@ -107,7 +107,6 @@ public class OBJReader {
 	    }
 	}
 
-    System.out.println(furthest);
 	return furthest;
     }
 
