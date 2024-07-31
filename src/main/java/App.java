@@ -15,8 +15,8 @@ import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.scene.layout.Priority;
 import javafx.scene.input.ScrollEvent;
-
-
+import javafx.scene.input.MouseButton;
+import javafx.stage.Screen;
 
 
 
@@ -61,7 +61,10 @@ public class App extends Application {
     private Scene scene;
     private Stage stage;
 
-    private OBJReader obj;    
+    private OBJReader obj;
+
+    private Double mouseX;
+    private Double mouseY;
     
     public App() {
         this.stage = null;
@@ -109,19 +112,40 @@ public class App extends Application {
 	this.root.heightProperty().addListener((obs, oldVal, newVal) -> {
 		canvas.setHeight(newVal.doubleValue() - controlBox.getHeight());
 	    });
+
+	this.canvas.setOnMousePressed(e -> {
+	    this.mouseX = e.getSceneX();
+	    this.mouseY = e.getSceneY();
+	});
 	
 	this.canvas.setOnMouseDragged(e -> {
-		Runnable task = () -> {
-		    Double newXZValue = Math.PI * 2 - (e.getSceneX() / this.canvas.getWidth() * Math.PI * 2);
-		    Double newYZValue = Math.PI * 2 - (e.getSceneY() / this.canvas.getHeight() * Math.PI * 2);
+		if (e.getButton().equals(MouseButton.PRIMARY)) {
+		    Runnable task = () -> {
+			Double newXZValue = Math.PI * 2 - (e.getSceneX() / this.canvas.getWidth() * Math.PI * 2);
+			Double newYZValue = Math.PI * 2 - (e.getSceneY() / this.canvas.getHeight() * Math.PI * 2);
         
-		    Platform.runLater(() -> {
-			    this.xzSlider.setValue(newXZValue);
-			    this.yzSlider.setValue(newYZValue);
-			    this.updateHandler();
-			});
-		};
-		runInNewThread(task, "MouseDraggedHandler");
+			Platform.runLater(() -> {
+				this.xzSlider.setValue(newXZValue);
+				this.yzSlider.setValue(newYZValue);
+				this.updateHandler();
+			    });
+		    };
+		    runInNewThread(task, "PrimaryDraggedHandler");
+		} else if (e.getButton().equals(MouseButton.SECONDARY)) {
+		    Double startX = this.mouseX;
+		    Double startY = this.mouseY;
+		    Runnable task = () -> {
+			Double newXvalue = e.getSceneX() - startX;
+			Double newYvalue = e.getSceneY() - startY;
+
+			Platform.runLater(() -> {
+				this.xTransField.setText("" + newXvalue / 100);
+				this.yTransField.setText("" + newYvalue / 100);
+				this.updateHandler();
+			    });
+		    };
+		    runInNewThread(task, "SecondaryDraggedHandler");
+		}
 	    });
 	
 	this.canvas.setOnScroll(e -> {
@@ -233,8 +257,8 @@ public class App extends Application {
 	Double xPan;
 	Double yPan;
 	Double zoom;
-	Double height = 16.;
-	Double width = 9.;
+	Double height = Screen.getPrimary().getBounds().getHeight();
+	Double width = Screen.getPrimary().getBounds().getWidth();
 	Double fov = 1.;
 	Double zNear = -5.;
 	Double zFar = 5.;
@@ -302,8 +326,8 @@ public class App extends Application {
 	    this.yPanField.setText("" + (this.canvas.getHeight() / 2));
 	    Vertex furthest = this.obj.getFurthest();
 	    Double distanceFurthest = Math.pow(Math.pow(furthest.getX(), 2) + Math.pow(furthest.getY(), 2) + Math.pow(furthest.getZ(), 2), 0.5);
-	    this.zTransField.setText("" + distanceFurthest * 2);
-	    this.zoomField.setText("" + (this.obj.getFurthest().distanceFromCenter() * 100));
+	    this.zTransField.setText("" + Math.floor(distanceFurthest * 2));
+	    this.zoomField.setText("" + Math.floor(this.obj.getFurthest().distanceFromCenter() * 100));
 	} catch (FileNotFoundException fnfe) {
 	    this.setInfoLbl("File not found; " + fnfe.getMessage());
 	} catch (IOException ioe) {
@@ -322,6 +346,8 @@ public class App extends Application {
     /** Loads a new OBJ from a the file specified. */
     private void loadHandler() {
 	readOBJ(fileInput.getText());
+	this.xTransField.setText("" + 0);
+	this.yTransField.setText("" + 0);
 	drawPerspective(obj.getVertices(), obj.getFaces());
     } // loadHandler
 

@@ -182,7 +182,7 @@ public class Matrix {
 				     final Double zNear, final Double zFar) {
 	
 	double d = zFar / (zFar - zNear);
-	return new Matrix(4, 4, new Double[][] {{h / w, 0., 0., 0.},
+	return new Matrix(4, 4, new Double[][] {{w / h, 0., 0., 0.},
 						{0., 1 / Math.tan(fov / 2), 0., 0.},
 						{0., 0., d, -d * zNear, 0.},
 						{0., 0., 1., 0.}});
