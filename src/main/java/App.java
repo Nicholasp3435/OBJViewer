@@ -138,9 +138,9 @@ public class App extends Application {
 			Double dY = (e.getSceneY() - startY) / this.canvas.getHeight();
 			Double xzValue = xzSlider.getValue();
 			Double yzValue = yzSlider.getValue();
-			Double newXZValue = (((xzValue + dX) % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
-			Double newYZValue = (((yzValue + dY) % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
-        
+			Double m = 0.5;
+			Double newXZValue = (((xzValue + (m / (1 + Math.pow(2, -5*dX))) - m / 2) % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+			Double newYZValue = (((yzValue + (m / (1 + Math.pow(2, -5*dY))) - m / 2) % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
 			Platform.runLater(() -> {
 				this.xzSlider.setValue(newXZValue);
 				this.yzSlider.setValue(newYZValue);
