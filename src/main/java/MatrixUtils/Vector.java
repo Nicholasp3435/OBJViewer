@@ -144,7 +144,10 @@ public class Vector extends Matrix {
 					      Double xTrans, Double yTrans, Double zTrans,
 					      Double xPan, Double yPan,
 					      Double height, Double width, Double fov,
-					      Double zNear, Double zFar) {
+					      Double zNear, Double zFar,
+                          Double xPivot, Double yPivot, Double zPivot) {
+    v = v.persTranslate(-xPivot, -yPivot, -zPivot);
+    v = new Vector(3, new Double[][] {{v.getEntry(0,0)}, {v.getEntry(1,0)}, {v.getEntry(2,0)}});
 	v = v.rotate(yz, xz, xy);
 	v = v.persTranslate(xTrans, yTrans, zTrans);
 	v = v.persDivide(Matrix.perspective(height, width, fov, zNear, zFar));
@@ -153,6 +156,23 @@ public class Vector extends Matrix {
 	v = v.orthoTranslate(xPan, yPan);
 	
 	return v;
+    }
+
+    public Vector add(Vector b) {
+        return new Vector(3, new Double[][] {{this.getEntry(0,0) + b.getEntry(0,0)},{this.getEntry(1,0) + b.getEntry(1,0)},{this.getEntry(2,0) + b.getEntry(2,0)}});
+    }
+
+    public Vector subtract(Vector b) {
+        return new Vector(3, new Double[][] {{this.getEntry(0,0) - b.getEntry(0,0)},{this.getEntry(1,0) - b.getEntry(1,0)},{this.getEntry(2,0) - b.getEntry(2,0)}});
+    }
+
+    public String toString() {
+        String s = "{";
+        for (int i = 0; i < this.getRowLen(); i++) {
+            s += this.getEntry(i,0) + ", ";
+        }
+        s += "}";
+        return s;
     }
     
 }

@@ -87,7 +87,7 @@ public class Matrix {
 
 
     @Override
-    public final String toString() {
+    public String toString() {
 	String str = "{";
 	for (int i = 0; i < this.row; i++) {
 	    str += "{";

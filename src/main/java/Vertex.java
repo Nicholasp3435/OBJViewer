@@ -65,13 +65,17 @@ public class Vertex {
 	return new Vector(3, new Double[][] {{this.x}, {this.y}, {this.z}});
     }
 
-    public Double distanceFromCenter() {
-	return Math.pow(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2), 0.5);
+    public Double distanceFromCenter(Vector center) {
+	Vector v = this.toVector();
+	v = v.subtract(center);
+	return Math.pow(Math.pow(v.getEntry(0,0), 2) + Math.pow(v.getEntry(1,0), 2) + Math.pow(v.getEntry(2,0), 2), 0.5);
     }
 
     @Override
     public final String toString() {
         return "(" + x + ", " + y + ", " + z + ")";
     } // toString
+
+    
     
 } // Vertex

@@ -80,9 +80,9 @@ public class App extends Application {
 	this.yzSliderBox = new HBox();
 	this.yzSlider = new Slider(0, Math.PI * 2, 0);
 	this.xzSliderBox = new HBox();
-	this.xzSlider = new Slider(0, Math.PI * 2, 0);
+	this.xzSlider = new Slider(-Math.PI, Math.PI, -Math.PI);
 	this.xySliderBox = new HBox();
-	this.xySlider = new Slider(0, Math.PI * 2, 0);
+	this.xySlider = new Slider(-Math.PI, Math.PI, -Math.PI);
 	this.transBox = new VBox();
 	this.xTransBox = new HBox();
 	this.xTransField = new TextField("0");
@@ -105,7 +105,18 @@ public class App extends Application {
 	this.updateBtn.setOnAction(e -> updateHandler());
 	this.infoLbl = new Label("");
 
-	this.readOBJ("yoshi");
+	try {
+	    this.readOBJ("yoshi");	
+	} catch (FileNotFoundException fnfe) {
+	    this.setInfoLbl("File not found; " + fnfe.getMessage());
+	    return;
+	} catch (IOException ioe) {
+	    this.setInfoLbl("Error in file; " + ioe.getMessage());
+	    return;
+	} catch (ArrayIndexOutOfBoundsException aioobe) {
+	    this.setInfoLbl("Error in file; " + aioobe.getMessage());
+	    return;
+	} // try
 
 	VBox.setVgrow(canvas, Priority.ALWAYS);
 	
@@ -121,7 +132,7 @@ public class App extends Application {
 	this.canvas.setOnMouseDragged(e -> {
 		if (e.getButton().equals(MouseButton.PRIMARY)) {
 		    Runnable task = () -> {
-			Double newXZValue = Math.PI * 2 - (e.getSceneX() / this.canvas.getWidth() * Math.PI * 2);
+			Double newXZValue = (e.getSceneX() / this.canvas.getWidth() * Math.PI * 2) - Math.PI;
 			Double newYZValue = Math.PI * 2 - (e.getSceneY() / this.canvas.getHeight() * Math.PI * 2);
         
 			Platform.runLater(() -> {
@@ -139,8 +150,9 @@ public class App extends Application {
 			Double newYvalue = e.getSceneY() - startY;
 
 			Platform.runLater(() -> {
-				this.xTransField.setText("" + newXvalue / 100);
-				this.yTransField.setText("" + newYvalue / 100);
+				Double transFactor = Double.parseDouble(this.zTransField.getText()) / 1000;
+				this.xTransField.setText("" + newXvalue * transFactor);
+				this.yTransField.setText("" + newYvalue * transFactor);
 				this.updateHandler();
 			    });
 		    };
@@ -150,7 +162,14 @@ public class App extends Application {
 	
 	this.canvas.setOnScroll(e -> {
 		Runnable task = () -> {
-		    Double newZoomValue = Double.parseDouble(this.zoomField.getText()) + e.getDeltaY();
+		    Double newZoomValue;
+		    try {
+			newZoomValue = Double.parseDouble(this.zoomField.getText()) + e.getDeltaY();
+		    } catch (NumberFormatException nfe) {
+			return;
+		    } catch (NullPointerException npe) {
+			return;
+		    } // try
 
 		    Platform.runLater(() -> {
 			    this.zoomField.setText("" + newZoomValue);
@@ -262,6 +281,9 @@ public class App extends Application {
 	Double fov = 1.;
 	Double zNear = -5.;
 	Double zFar = 5.;
+	Double xPivot = this.obj.getCenter().getEntry(0,0);
+	Double yPivot = this.obj.getCenter().getEntry(1,0);
+	Double zPivot = this.obj.getCenter().getEntry(2,0);
 	
 	try {
 	    xTrans = Double.parseDouble(this.xTransField.getText());
@@ -294,23 +316,26 @@ public class App extends Application {
 						    yz, xz, xy,
 						    xTrans, yTrans, zTrans,
 						    xPan, yPan,
-						    height, width, fov, zNear, zFar);
+						    height, width, fov, zNear, zFar,
+						    xPivot, yPivot, zPivot);
 
 	    Vector v2 = Vector.perspectiveTransform(vect2, zoom,
 						    yz, xz, xy,
 						    xTrans, yTrans, zTrans,
 						    xPan, yPan,
-						    height, width, fov, zNear, zFar);
+						    height, width, fov, zNear, zFar,
+						    xPivot, yPivot, zPivot);
 
 	    Vector v3 = Vector.perspectiveTransform(vect3, zoom,
 						    yz, xz, xy,
 						    xTrans, yTrans, zTrans,
 						    xPan, yPan,
-						    height, width, fov, zNear, zFar);
+						    height, width, fov, zNear, zFar,
+						    xPivot, yPivot, zPivot);
 	    
 	    drawTriangle(v1, v2, v3);
 	} // for
-	this.setInfoLbl("Loaded: " + this.fileInput.getText());
+	this.setInfoLbl("Loaded: " + this.obj.getName());
     } // drawPerspective
 
     /**
@@ -318,24 +343,15 @@ public class App extends Application {
      *
      * @param file The filename to read.
      */
-    private void readOBJ(final String file) {
+    private void readOBJ(final String file) throws FileNotFoundException, IOException {
 	String modelFile = "models/" + file + ".obj";
-	try {
-	    this.obj = new OBJReader(modelFile);
-	    this.xPanField.setText("" + (this.canvas.getWidth() / 2));
-	    this.yPanField.setText("" + (this.canvas.getHeight() / 2));
-	    Vertex furthest = this.obj.getFurthest();
-	    Double distanceFurthest = Math.pow(Math.pow(furthest.getX(), 2) + Math.pow(furthest.getY(), 2) + Math.pow(furthest.getZ(), 2), 0.5);
-	    this.zTransField.setText("" + Math.floor(distanceFurthest * 2));
-	    this.zoomField.setText("" + Math.floor(this.obj.getFurthest().distanceFromCenter() * 100));
-	} catch (FileNotFoundException fnfe) {
-	    this.setInfoLbl("File not found; " + fnfe.getMessage());
-	} catch (IOException ioe) {
-	    this.setInfoLbl("Error in file; " + ioe.getMessage());
-	} catch (ArrayIndexOutOfBoundsException aioobe) {
-	    this.setInfoLbl("Error in file; " + aioobe.getMessage());
-	} // try
-	return;
+	this.obj = new OBJReader(modelFile);
+	this.xPanField.setText("" + (this.canvas.getWidth() / 2));
+	this.yPanField.setText("" + (this.canvas.getHeight() / 2));
+	Vertex furthest = this.obj.getFurthest();
+	Double distanceFurthest = furthest.distanceFromCenter(this.obj.getCenter());
+	this.zTransField.setText("" + Math.floor(distanceFurthest * 2 * 100) / 100);
+	this.zoomField.setText("400");
     } // readOBJ
 
     /** Updates the existing OBJ. */
@@ -345,7 +361,18 @@ public class App extends Application {
 
     /** Loads a new OBJ from a the file specified. */
     private void loadHandler() {
-	readOBJ(fileInput.getText());
+	try {
+	    readOBJ(fileInput.getText());
+	} catch (FileNotFoundException fnfe) {
+	    this.setInfoLbl("File not found; " + fnfe.getMessage());
+	    return;
+	} catch (IOException ioe) {
+	    this.setInfoLbl("Error in file; " + ioe.getMessage());
+	    return;
+	} catch (ArrayIndexOutOfBoundsException aioobe) {
+	    this.setInfoLbl("Error in file; " + aioobe.getMessage());
+	    return;
+	} // try
 	this.xTransField.setText("" + 0);
 	this.yTransField.setText("" + 0);
 	drawPerspective(obj.getVertices(), obj.getFaces());

@@ -14,6 +14,9 @@ public class OBJReader {
     private int vertexCount = 0;
     /** The amound of faces. */
     private int faceCount = 0;
+    /** The file name */
+    private String name;
+    private Vector center;
 
     /** Used by the constructor to get the X component of the OBJ vector. */
     private static final int X_COMPONENT = 1;
@@ -38,6 +41,8 @@ public class OBJReader {
     public OBJReader(final String fileName)
 	throws FileNotFoundException, IOException {
 
+	this.name = fileName;
+	
 	// Counts the faces and vertices to make the arrays
 	BufferedReader br = new BufferedReader(new FileReader(fileName));
 	String line;
@@ -75,6 +80,7 @@ public class OBJReader {
 		j++;
 	    } // if
 	} // while
+    calculateCenter();
     } // OBJReader
 
     /**
@@ -102,15 +108,14 @@ public class OBJReader {
 	Vertex furthest = new Vertex(0., 0., 0.);
 
 	for (int i = 0; i < vertices.length; i++) {
-	    if (vertices[i].distanceFromCenter() >= furthest.distanceFromCenter()) {
+	    if (vertices[i].distanceFromCenter(this.center) >= furthest.distanceFromCenter(this.center)) {
 		furthest = vertices[i];
 	    }
 	}
-
 	return furthest;
     }
 
-    public Vector getCenter() {
+    public void calculateCenter() {
 	Double xMean = 0.;
 	Double yMean = 0.;
 	Double zMean = 0.;
@@ -125,7 +130,17 @@ public class OBJReader {
 	yMean /= vertices.length;
 	zMean /= vertices.length;
 
-	return new Vector(3, new Double[][] {{xMean}, {yMean}, {zMean}});
+	this.center = new Vector(3, new Double[][] {{xMean}, {yMean}, {zMean}});
     }
+
+    public Vector getCenter() {
+        return this.center;
+    }
+
+    public String getName() {
+	return this.name;
+    }
+
+
     
 } // OBJReader
