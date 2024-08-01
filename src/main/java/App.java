@@ -80,9 +80,9 @@ public class App extends Application {
 	this.yzSliderBox = new HBox();
 	this.yzSlider = new Slider(0, Math.PI * 2, 0);
 	this.xzSliderBox = new HBox();
-	this.xzSlider = new Slider(-Math.PI, Math.PI, -Math.PI);
+	this.xzSlider = new Slider(0, Math.PI * 2, Math.PI);
 	this.xySliderBox = new HBox();
-	this.xySlider = new Slider(-Math.PI, Math.PI, -Math.PI);
+	this.xySlider = new Slider(0, Math.PI * 2, Math.PI);
 	this.transBox = new VBox();
 	this.xTransBox = new HBox();
 	this.xTransField = new TextField("0");
@@ -130,10 +130,16 @@ public class App extends Application {
 	});
 	
 	this.canvas.setOnMouseDragged(e -> {
+		Double startX = this.mouseX;
+		Double startY = this.mouseY;
 		if (e.getButton().equals(MouseButton.PRIMARY)) {
 		    Runnable task = () -> {
-			Double newXZValue = (e.getSceneX() / this.canvas.getWidth() * Math.PI * 2) - Math.PI;
-			Double newYZValue = Math.PI * 2 - (e.getSceneY() / this.canvas.getHeight() * Math.PI * 2);
+			Double dX = (e.getSceneX() - startX) / this.canvas.getWidth();
+			Double dY = (e.getSceneY() - startY) / this.canvas.getHeight();
+			Double xzValue = xzSlider.getValue();
+			Double yzValue = yzSlider.getValue();
+			Double newXZValue = (((xzValue + dX) % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+			Double newYZValue = (((yzValue + dY) % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
         
 			Platform.runLater(() -> {
 				this.xzSlider.setValue(newXZValue);
@@ -143,8 +149,6 @@ public class App extends Application {
 		    };
 		    runInNewThread(task, "PrimaryDraggedHandler");
 		} else if (e.getButton().equals(MouseButton.SECONDARY)) {
-		    Double startX = this.mouseX;
-		    Double startY = this.mouseY;
 		    Runnable task = () -> {
 			Double newXvalue = e.getSceneX() - startX;
 			Double newYvalue = e.getSceneY() - startY;
