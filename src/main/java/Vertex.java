@@ -1,5 +1,4 @@
-import MatrixUtils.Vector;
-
+import matrixutils.Vector;
 
 public class Vertex {
 
@@ -17,7 +16,7 @@ public class Vertex {
      *
      * @param x The x component
      * @param y The y component
-     * @param z The z component
+     * @param z The z compyonent
      */
     public Vertex(final Double x, final Double y, final Double z) {
         this.x = x;
@@ -63,19 +62,26 @@ public class Vertex {
      */
     public Vector toVector() {
 	return new Vector(3, new Double[][] {{this.x}, {this.y}, {this.z}});
-    }
+    } //toVector
 
-    public Double distanceFromCenter(Vector center) {
+    /**
+     * Uses the pythagoreaon theorem to find the distance from the tip of a vector.
+     *
+     * @param vector A vector to get the distance from.
+     *
+     * @return the distance the vertex is from the tip of the vector.
+     */
+    public Double distanceFromVector(final Vector vector) {
 	Vector v = this.toVector();
-	v = v.subtract(center);
-	return Math.pow(Math.pow(v.getEntry(0,0), 2) + Math.pow(v.getEntry(1,0), 2) + Math.pow(v.getEntry(2,0), 2), 0.5);
-    }
+	v = v.subtract(vector);
+	return Math.pow(Math.pow(v.getEntry(0, 0), 2)
+			+ Math.pow(v.getEntry(1, 0), 2)
+			+ Math.pow(v.getEntry(2, 0), 2), 0.5);
+    } // ditanceFromVector
 
     @Override
     public final String toString() {
         return "(" + x + ", " + y + ", " + z + ")";
     } // toString
-
-    
     
 } // Vertex

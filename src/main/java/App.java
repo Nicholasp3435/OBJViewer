@@ -1,4 +1,4 @@
-import MatrixUtils.Vector;
+import matrixutils.Vector;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -14,59 +14,92 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.application.Platform;
 import javafx.scene.layout.Priority;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Screen;
-
-
-
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class App extends Application {
 
+    /** the box for all the controls. */
     private HBox controlBox;
+    /** the box for the rotation boxes. */
     private VBox rotateBox;
+    /** the box for yz rotations. */
     private HBox yzSliderBox;
+    /** the slider for yz rotations. */
     private Slider yzSlider;
+    /** the box for xz rotations. */
     private HBox xzSliderBox;
+    /** the slider for xz rotations. */
     private Slider xzSlider;
+    /** the box for xy rotations. */
     private HBox xySliderBox;
+    /** the slider for the xy rotations. */
     private Slider xySlider;    
+    /** the box for the trans boxes. */
     private VBox transBox;
+    /** the box for the x trans. */
     private HBox xTransBox;
+    /** the field for the x trans. */
     private TextField xTransField;
+    /** the box for the y trans. */
     private HBox yTransBox;
+    /** the field to translate y. */
     private TextField yTransField;
+    /** the box for the z trans. */
     private HBox zTransBox;
+    /** the field to translate z. */
     private TextField zTransField;
+    /** the box containing the pan boxes. */
     private VBox panBox;
+    /** the box containing the x pan nodes. */
     private HBox xPanBox;
+    /** the field to type how much to pan x. */
     private TextField xPanField;
+    /** the box containing the y pan nodes. */
     private HBox yPanBox;
+    /** the field to type how much to pan y. */
     private TextField yPanField;
+    /** box containing the zoom nodes. */
     private HBox zoomBox;
+    /** field to type how much to zoom. */
     private TextField zoomField;
+    /** box containing file input nodes. */
     private HBox fileInBox;
+    /** the field to type the file to load. */
     private TextField fileInput;
+    /** Loads the obj file. */
     private Button loadBtn;
+    /** Updates the already loaded obj file to the control box settings. */
     private Button updateBtn;
+    /** A label for dispolaying information. */
     private Label infoLbl;
+    /** button for showing/hiding the advanced options. */
     private Button showBtn;
-    
+
+    /** the canvas to draw on. */
     private Canvas canvas;
+    /** The graphics context for the canvas for drawing. */
     private GraphicsContext gc;
 
+    /** the primary root. */
     private VBox root;
+    /** the primary javafx scene. */
     private Scene scene;
+    /** the javafx stage. */
     private Stage stage;
 
+    /** the OBJ reader to parse the files. */
     private OBJReader obj;
 
+    /** the x coord of the mouse cursor. */
     private Double mouseX;
+    /** the y coord of the mouse cursor. */
     private Double mouseY;
-    
+
+    /** Instantiates all the nodes. */
     public App() {
         this.stage = null;
 	this.scene = null;
@@ -140,12 +173,14 @@ public class App extends Application {
 	
 	this.root.heightProperty().addListener((obs, oldVal, newVal) -> {
 		if (this.controlBox.isVisible()) {
-		    canvas.setHeight(newVal.doubleValue() - controlBox.getHeight() -  this.fileInBox.getHeight() - this.infoLbl.getHeight());
+		    canvas.setHeight(newVal.doubleValue() - controlBox.getHeight()
+				     - this.fileInBox.getHeight() - this.infoLbl.getHeight());
 		} else {
-		    canvas.setHeight(newVal.doubleValue() -  this.fileInBox.getHeight() - this.infoLbl.getHeight());
+		    canvas.setHeight(newVal.doubleValue()
+				     - this.fileInBox.getHeight() - this.infoLbl.getHeight());
 		}
 	    });
-
+	
 	this.canvas.setOnMousePressed(e -> {
 		this.mouseX = e.getSceneX();
 		this.mouseY = e.getSceneY();
@@ -157,30 +192,35 @@ public class App extends Application {
 		Double dX = (e.getSceneX() - startX);
 		Double dY = (e.getSceneY() - startY);
 		if (e.getButton().equals(MouseButton.PRIMARY)) {
+		    
+		mouseX = e.getSceneX();
+		mouseY = e.getSceneY();
 		    Double sensitivity = 10.;
 		    dX = dX / canvas.getWidth() * sensitivity;
 		    dY = dY / canvas.getHeight() * sensitivity;
 		    Double xzValue = xzSlider.getValue();
 		    Double yzValue = yzSlider.getValue();
-		    Double newXZValue = modPositive(xzValue + dX, Math.PI * 2);
-		    Double newYZValue = modPositive(yzValue + dY, Math.PI * 2);
-		    xzSlider.setValue(newXZValue);
-		    yzSlider.setValue(newYZValue);
+		    Double newXZvalue = modPositive(xzValue + dX, Math.PI * 2);
+		    Double newYZvalue = modPositive(yzValue + dY, Math.PI * 2);
+		    xzSlider.setValue(newXZvalue);
+		    yzSlider.setValue(newYZvalue);
 		    Runnable task = () -> {
 			Platform.runLater(() -> {
 				updateHandler();
 			    });
 		    };
-
-		    mouseX = e.getSceneX();
-		    mouseY = e.getSceneY();
-		    
-
+		    System.out.println("" + newXZvalue + " " + dX);
 		    runInNewThread(task, "PrimaryDraggedHandler");
 		} else if (e.getButton().equals(MouseButton.SECONDARY)) {
-		    Double newXvalue = dX;
-		    Double newYvalue = dY;
+		    Double sensitivity = 1.;
+		    dX = dX * sensitivity;
+		    dY = dY * sensitivity;
+		    Double xValue = Double.parseDouble(this.xTransField.getText());
+		    Double yValue = Double.parseDouble(this.yTransField.getText());
+		    Double newXvalue = xValue + dX;
+		    Double newYvalue = yValue + dY;
 		    Double transFactor = Double.parseDouble(this.zTransField.getText()) / 1000;
+		    
 		    this.xTransField.setText("" + newXvalue * transFactor);
 		    this.yTransField.setText("" + newYvalue * transFactor);
 		    Runnable task = () -> {
@@ -188,6 +228,8 @@ public class App extends Application {
 				this.updateHandler();
 			    });
 		    };
+		    
+		    System.out.println("" + newXvalue + " " + dX);
 		    runInNewThread(task, "SecondaryDraggedHandler");
 		}
 	    });
@@ -277,7 +319,7 @@ public class App extends Application {
         gc.strokeLine(startX, startY, endX, endY);
     } // drawLine
 
-    private Double modPositive(Double a, Double b) {
+    private Double modPositive(final Double a, final Double b) {
 	return (((a % b) + b) % b);
     }
 
@@ -313,9 +355,9 @@ public class App extends Application {
 	Double fov = 1.;
 	Double zNear = -5.;
 	Double zFar = 5.;
-	Double xPivot = this.obj.getCenter().getEntry(0,0);
-	Double yPivot = this.obj.getCenter().getEntry(1,0);
-	Double zPivot = this.obj.getCenter().getEntry(2,0);
+	Double xPivot = this.obj.getCenter().getEntry(0, 0);
+	Double yPivot = this.obj.getCenter().getEntry(1, 0);
+	Double zPivot = this.obj.getCenter().getEntry(2, 0);
 	
 	try {
 	    xTrans = Double.parseDouble(this.xTransField.getText());
@@ -380,7 +422,7 @@ public class App extends Application {
 	this.xPanField.setText("" + (this.canvas.getWidth() / 2));
 	this.yPanField.setText("" + (this.canvas.getHeight() / 2));
 	Vertex furthest = this.obj.getFurthest();
-	Double distanceFurthest = furthest.distanceFromCenter(this.obj.getCenter());
+	Double distanceFurthest = furthest.distanceFromVector(this.obj.getCenter());
 	this.zTransField.setText("" + Math.floor(distanceFurthest * 2 * 100) / 100);
 	this.zoomField.setText("400");
     } // readOBJ

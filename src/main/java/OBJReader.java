@@ -1,4 +1,4 @@
-import MatrixUtils.Vector;
+import matrixutils.Vector;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
@@ -14,8 +14,9 @@ public class OBJReader {
     private int vertexCount = 0;
     /** The amound of faces. */
     private int faceCount = 0;
-    /** The file name */
+    /** The file name. */
     private String name;
+    /** The center of the model. */
     private Vector center;
 
     /** Used by the constructor to get the X component of the OBJ vector. */
@@ -52,7 +53,7 @@ public class OBJReader {
 		vertexCount++;
 	    } else if (parsed[0].equals("f")) {
 		faceCount++;
-	    }
+	    } // if
 	} // while
 	
 	vertices = new Vertex[vertexCount];
@@ -104,18 +105,28 @@ public class OBJReader {
 	return faceCount;
     } // getFaceCount
 
-    public Vertex getFurthest() {
+    /**
+     * Gets the furthest vertex from the center of the obj model.
+     *
+     * @return the furthest vertex from the center.
+     */
+    public final Vertex getFurthest() {
 	Vertex furthest = new Vertex(0., 0., 0.);
 
 	for (int i = 0; i < vertices.length; i++) {
-	    if (vertices[i].distanceFromCenter(this.center) >= furthest.distanceFromCenter(this.center)) {
+	    if (vertices[i].distanceFromVector(this.center) >= furthest.distanceFromVector(this.center)) {
 		furthest = vertices[i];
-	    }
-	}
+	    } // if
+	}  // for
 	return furthest;
-    }
+    } // getFurthest
 
-    public void calculateCenter() {
+    /**
+     * Calculates the center of the obj model by taking the average of all the vertices.
+     * I know this isn't really the center, but I don't feel like doing calculus to find
+     * the centroid.
+     */
+    private void calculateCenter() {
 	Double xMean = 0.;
 	Double yMean = 0.;
 	Double zMean = 0.;
@@ -124,23 +135,31 @@ public class OBJReader {
 	    xMean += vertices[i].getX();
 	    yMean += vertices[i].getY();
 	    zMean += vertices[i].getZ();
-	}
+	} // for
 
 	xMean /= vertices.length;
 	yMean /= vertices.length;
 	zMean /= vertices.length;
 
 	this.center = new Vector(3, new Double[][] {{xMean}, {yMean}, {zMean}});
-    }
+    } // calculateCenter
 
+    /**
+     * Gets the center of the obj model.
+     *
+     * @return The center of the obj model.
+     */
     public Vector getCenter() {
         return this.center;
-    }
+    } // getCenter
 
+    /**
+     * Gets the name of the filename.
+     *
+     * @return The filename.
+     */
     public String getName() {
 	return this.name;
-    }
-
-
+    } // getName
     
 } // OBJReader

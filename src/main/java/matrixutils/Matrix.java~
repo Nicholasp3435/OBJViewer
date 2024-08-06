@@ -1,6 +1,6 @@
-package MatrixUtils;
+package matrixutils;
 
-import MatrixUtils.exception.DimensionMismatchException;
+import matrixutils.exception.DimensionMismatchException;
 
 public class Matrix {
 
@@ -83,8 +83,6 @@ public class Matrix {
     void setEntry(final int r, final int c, final Double value) {
 	this.matrix[r][c] = value;
     } // getEntry
-
-
 
     @Override
     public String toString() {

@@ -1,15 +1,14 @@
-package MatrixUtils;
+package matrixutils;
 
-import MatrixUtils.Matrix;
-import MatrixUtils.exception.DimensionMismatchException;
+import matrixutils.exception.DimensionMismatchException;
 
 public class Vector extends Matrix {
 
-    public Vector(int row, Double[][] vector) {
+    public Vector(final int row, final Double[][] vector) {
 	super(row, 1, vector);
     }
 
-    private Vector(int row) {
+    private Vector(final int row) {
 	super(row, 1);
     }
 
@@ -24,7 +23,8 @@ public class Vector extends Matrix {
     public static Vector multiply(final Matrix a, final Vector v) throws DimensionMismatchException {
 	// check if compatible
 	if (a.getColLen() != v.getRowLen()) {
-	    throw new DimensionMismatchException("Columns of A do not match the rows of v; " + a.getColLen() + " != " + v.getRowLen());
+	    throw new DimensionMismatchException("Columns of A do not match the rows of v; "
+						 + a.getColLen() + " != " + v.getRowLen());
 	} // if
 	
 	Vector c = new Vector(a.getRowLen());
@@ -50,9 +50,7 @@ public class Vector extends Matrix {
     } // orthoTanslate
 
     /**
-     * Rprojects a vector onto the 2D plane.
-     *
-     * @param v The vector to project.
+     * Projects this vector onto the 2D plane.
      *
      * @return The projected vector.
      */
@@ -139,40 +137,85 @@ public class Vector extends Matrix {
 	return scaled;
     } // scale
 
-    public static Vector perspectiveTransform(Vector v, Double zoom,
-					      Double yz, Double xz, Double xy,
-					      Double xTrans, Double yTrans, Double zTrans,
-					      Double xPan, Double yPan,
-					      Double height, Double width, Double fov,
-					      Double zNear, Double zFar,
-                          Double xPivot, Double yPivot, Double zPivot) {
-    v = v.persTranslate(-xPivot, -yPivot, -zPivot);
-    v = new Vector(3, new Double[][] {{v.getEntry(0,0)}, {v.getEntry(1,0)}, {v.getEntry(2,0)}});
+    /**
+     * Perfoms a perspective transform of a vector.
+     *
+     * @param vector The vector to transform.
+     * @param zoom The amount to scale up (to zoom) the vector.
+     * @param yz The amount to rotate the vector about the yz plane.
+     * @param xz The amount to rotate the vector about the xz plane.
+     * @param xy The amount to rotate the vector about the xy plane.
+     * @param xTrans The amount to translate the vector about the x axis.
+     * @param yTrans The amount to translate the vector about the y axis.
+     * @param zTrans the amount to translate the vector about the z axis.
+     * @param xPan The amount to pan the vector about the x axis.
+     * @param yPan The amount to pan the vector about the y axis.
+     * @param height The screen height.
+     * @param width The screen width.
+     * @param fov The fov of the perspective.
+     * @param zNear The z distance of the z near plane.
+     * @param zFar The z distance of the z far plane.
+     * @param xPivot The x coordinate of the yz plane to rotate about.
+     * @param yPivot The y coordinate of the xz plane to rotate about.
+     * @param zPivot The z coordinate of the xy plane to rotate about.
+     *
+     * @return The transformed vector.
+     */
+    public static Vector perspectiveTransform(final Vector vector, final Double zoom,
+					      final Double yz, final Double xz, final Double xy,
+					      final Double xTrans, final Double yTrans, final Double zTrans,
+					      final Double xPan, final Double yPan,
+					      final Double height, final Double width, final Double fov,
+					      final Double zNear, final Double zFar,
+					      final Double xPivot, final Double yPivot, final Double zPivot) {
+	Vector v = vector;
+	// translates the vector to the pivot
+	v = v.persTranslate(-xPivot, -yPivot, -zPivot);
+	v = new Vector(3, new Double[][] {{v.getEntry(0, 0)}, {v.getEntry(1, 0)}, {v.getEntry(2, 0)}});
+
+	// rotates the vector
 	v = v.rotate(yz, xz, xy);
+
+	// translates the vector back to it's original spot
 	v = v.persTranslate(xTrans, yTrans, zTrans);
+
+	// does the perspective divide (makes far things smaller
 	v = v.persDivide(Matrix.perspective(height, width, fov, zNear, zFar));
+
+	// projects the vector onto the xy plane
 	v = v.project();
+
+	// scales the vector to zoom in/out
 	v = v.scale(zoom);
+
+	// pans the vector on the xy plane
 	v = v.orthoTranslate(xPan, yPan);
 	
 	return v;
+    } // perspectiveTransform
+
+    /**
+     * Subtracts a vector from this.
+     *
+     * @param b The vector to subtract.
+     *
+     * @return The vector This - b.
+     */
+    public final Vector subtract(final Vector b) {
+        return new Vector(3, new Double[][] {
+		{this.getEntry(0, 0) - b.getEntry(0, 0)},
+		{this.getEntry(1, 0) - b.getEntry(1, 0)},
+		{this.getEntry(2, 0) - b.getEntry(2, 0)}});
     }
 
-    public Vector add(Vector b) {
-        return new Vector(3, new Double[][] {{this.getEntry(0,0) + b.getEntry(0,0)},{this.getEntry(1,0) + b.getEntry(1,0)},{this.getEntry(2,0) + b.getEntry(2,0)}});
-    }
-
-    public Vector subtract(Vector b) {
-        return new Vector(3, new Double[][] {{this.getEntry(0,0) - b.getEntry(0,0)},{this.getEntry(1,0) - b.getEntry(1,0)},{this.getEntry(2,0) - b.getEntry(2,0)}});
-    }
-
-    public String toString() {
+    @Override
+    public final String toString() {
         String s = "{";
         for (int i = 0; i < this.getRowLen(); i++) {
-            s += this.getEntry(i,0) + ", ";
+            s += this.getEntry(i, 0) + ", ";
         }
         s += "}";
         return s;
-    }
+    } // toString
     
-}
+} // Vector
