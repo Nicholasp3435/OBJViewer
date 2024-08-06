@@ -191,10 +191,9 @@ public class App extends Application {
 		Double startY = this.mouseY;
 		Double dX = (e.getSceneX() - startX);
 		Double dY = (e.getSceneY() - startY);
-		if (e.getButton().equals(MouseButton.PRIMARY)) {
-		    
 		mouseX = e.getSceneX();
 		mouseY = e.getSceneY();
+		if (e.getButton().equals(MouseButton.PRIMARY)) {
 		    Double sensitivity = 10.;
 		    dX = dX / canvas.getWidth() * sensitivity;
 		    dY = dY / canvas.getHeight() * sensitivity;
@@ -204,34 +203,26 @@ public class App extends Application {
 		    Double newYZvalue = modPositive(yzValue + dY, Math.PI * 2);
 		    xzSlider.setValue(newXZvalue);
 		    yzSlider.setValue(newYZvalue);
-		    Runnable task = () -> {
-			Platform.runLater(() -> {
-				updateHandler();
-			    });
-		    };
-		    System.out.println("" + newXZvalue + " " + dX);
-		    runInNewThread(task, "PrimaryDraggedHandler");
 		} else if (e.getButton().equals(MouseButton.SECONDARY)) {
 		    Double sensitivity = 1.;
 		    dX = dX * sensitivity;
 		    dY = dY * sensitivity;
 		    Double xValue = Double.parseDouble(this.xTransField.getText());
 		    Double yValue = Double.parseDouble(this.yTransField.getText());
-		    Double newXvalue = xValue + dX;
-		    Double newYvalue = yValue + dY;
 		    Double transFactor = Double.parseDouble(this.zTransField.getText()) / 1000;
-		    
-		    this.xTransField.setText("" + newXvalue * transFactor);
-		    this.yTransField.setText("" + newYvalue * transFactor);
-		    Runnable task = () -> {
-			Platform.runLater(() -> {
-				this.updateHandler();
-			    });
-		    };
-		    
-		    System.out.println("" + newXvalue + " " + dX);
-		    runInNewThread(task, "SecondaryDraggedHandler");
+		    Double newXvalue = (xValue + dX * transFactor);
+		    Double newYvalue = (yValue + dY * transFactor);
+		    this.xTransField.setText("" + newXvalue);
+		    this.yTransField.setText("" + newYvalue);
 		}
+		
+		Runnable task = () -> {
+		    Platform.runLater(() -> {
+			    this.updateHandler();
+			});
+		};
+		    
+		runInNewThread(task, "DraggedHandler");
 	    });
 	
 	this.canvas.setOnScroll(e -> {
