@@ -415,7 +415,7 @@ public class App extends Application {
 	Vertex furthest = this.obj.getFurthest();
 	Double distanceFurthest = furthest.distanceFromVector(this.obj.getCenter());
 	this.zTransField.setText("" + Math.floor(distanceFurthest * 2 * 100) / 100);
-	this.zoomField.setText("400");
+	this.zoomField.setText("" + this.canvas.getHeight() / 2.5);
     } // readOBJ
 
     /** Updates the existing OBJ. */
