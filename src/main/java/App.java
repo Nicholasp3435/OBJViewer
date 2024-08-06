@@ -53,6 +53,7 @@ public class App extends Application {
     private Button loadBtn;
     private Button updateBtn;
     private Label infoLbl;
+    private Button showBtn;
     
     private Canvas canvas;
     private GraphicsContext gc;
@@ -104,7 +105,24 @@ public class App extends Application {
 	this.updateBtn = new Button("Update");
 	this.updateBtn.setOnAction(e -> updateHandler());
 	this.infoLbl = new Label("");
-
+	this.showBtn = new Button("Advanced ↑");
+	this.showBtn.setOnAction(e -> {
+		if (this.controlBox.isVisible()) {
+		    this.root.getChildren().remove(this.controlBox);
+		    this.controlBox.setVisible(false);
+		    this.updateHandler();
+		    this.showBtn.setText("Advanced ↓");
+		    canvas.setHeight(this.canvas.getHeight() +  this.controlBox.getHeight());
+		    this.updateHandler();
+		} else {
+		    this.root.getChildren().addAll(this.controlBox);
+		    this.controlBox.setVisible(true);
+		    this.showBtn.setText("Advanced ↑");
+		    canvas.setHeight(this.canvas.getHeight() -  this.controlBox.getHeight());
+		    this.updateHandler();
+		}
+	    });
+	
 	try {
 	    this.readOBJ("yoshi");	
 	} catch (FileNotFoundException fnfe) {
@@ -121,42 +139,52 @@ public class App extends Application {
 	VBox.setVgrow(canvas, Priority.ALWAYS);
 	
 	this.root.heightProperty().addListener((obs, oldVal, newVal) -> {
-		canvas.setHeight(newVal.doubleValue() - controlBox.getHeight());
+		if (this.controlBox.isVisible()) {
+		    canvas.setHeight(newVal.doubleValue() - controlBox.getHeight() -  this.fileInBox.getHeight() - this.infoLbl.getHeight());
+		} else {
+		    canvas.setHeight(newVal.doubleValue() -  this.fileInBox.getHeight() - this.infoLbl.getHeight());
+		}
 	    });
 
 	this.canvas.setOnMousePressed(e -> {
-	    this.mouseX = e.getSceneX();
-	    this.mouseY = e.getSceneY();
-	});
+		this.mouseX = e.getSceneX();
+		this.mouseY = e.getSceneY();
+	    });
 	
 	this.canvas.setOnMouseDragged(e -> {
 		Double startX = this.mouseX;
 		Double startY = this.mouseY;
+		Double dX = (e.getSceneX() - startX);
+		Double dY = (e.getSceneY() - startY);
 		if (e.getButton().equals(MouseButton.PRIMARY)) {
+		    Double sensitivity = 10.;
+		    dX = dX / canvas.getWidth() * sensitivity;
+		    dY = dY / canvas.getHeight() * sensitivity;
+		    Double xzValue = xzSlider.getValue();
+		    Double yzValue = yzSlider.getValue();
+		    Double newXZValue = modPositive(xzValue + dX, Math.PI * 2);
+		    Double newYZValue = modPositive(yzValue + dY, Math.PI * 2);
+		    xzSlider.setValue(newXZValue);
+		    yzSlider.setValue(newYZValue);
 		    Runnable task = () -> {
-			Double dX = (e.getSceneX() - startX) / this.canvas.getWidth();
-			Double dY = (e.getSceneY() - startY) / this.canvas.getHeight();
-			Double xzValue = xzSlider.getValue();
-			Double yzValue = yzSlider.getValue();
-			Double m = 0.5;
-			Double newXZValue = (((xzValue + (m / (1 + Math.pow(2, -5*dX))) - m / 2) % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
-			Double newYZValue = (((yzValue + (m / (1 + Math.pow(2, -5*dY))) - m / 2) % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
 			Platform.runLater(() -> {
-				this.xzSlider.setValue(newXZValue);
-				this.yzSlider.setValue(newYZValue);
-				this.updateHandler();
+				updateHandler();
 			    });
 		    };
+
+		    mouseX = e.getSceneX();
+		    mouseY = e.getSceneY();
+		    
+
 		    runInNewThread(task, "PrimaryDraggedHandler");
 		} else if (e.getButton().equals(MouseButton.SECONDARY)) {
+		    Double newXvalue = dX;
+		    Double newYvalue = dY;
+		    Double transFactor = Double.parseDouble(this.zTransField.getText()) / 1000;
+		    this.xTransField.setText("" + newXvalue * transFactor);
+		    this.yTransField.setText("" + newYvalue * transFactor);
 		    Runnable task = () -> {
-			Double newXvalue = e.getSceneX() - startX;
-			Double newYvalue = e.getSceneY() - startY;
-
 			Platform.runLater(() -> {
-				Double transFactor = Double.parseDouble(this.zTransField.getText()) / 1000;
-				this.xTransField.setText("" + newXvalue * transFactor);
-				this.yTransField.setText("" + newYvalue * transFactor);
 				this.updateHandler();
 			    });
 		    };
@@ -165,22 +193,17 @@ public class App extends Application {
 	    });
 	
 	this.canvas.setOnScroll(e -> {
-		Runnable task = () -> {
-		    Double newZoomValue;
-		    try {
-			newZoomValue = Double.parseDouble(this.zoomField.getText()) + e.getDeltaY();
-		    } catch (NumberFormatException nfe) {
-			return;
-		    } catch (NullPointerException npe) {
-			return;
-		    } // try
+		Double newZoomValue;
+		try {
+		    newZoomValue = Double.parseDouble(this.zoomField.getText()) + e.getDeltaY();
+		} catch (NumberFormatException nfe) {
+		    return;
+		} catch (NullPointerException npe) {
+		    return;
+		} // try
 
-		    Platform.runLater(() -> {
-			    this.zoomField.setText("" + newZoomValue);
-			    this.updateHandler();
-			});
-		};
-		runInNewThread(task, "ScrollHandler");
+		this.zoomField.setText("" + newZoomValue);
+		this.updateHandler();
 	    });
     } // App
 
@@ -206,14 +229,15 @@ public class App extends Application {
     public final void start(final Stage stage) {
 	this.scene = new Scene(this.root);
 
-	drawPerspective(obj.getVertices(), obj.getFaces());
 
 	this.stage = stage;
 	this.stage.setOnCloseRequest(e -> Platform.exit());
 	this.stage.setTitle("OBJ Viewer");
 	this.stage.setScene(this.scene);
-	this.stage.sizeToScene();
+
+	this.stage.setMaximized(true);
 	this.stage.show();
+
     } // start
 
     @Override
@@ -223,9 +247,9 @@ public class App extends Application {
 
     /** Connects the nodes of the scene together. */
     private void connectNodes() {
-	this.root.getChildren().addAll(this.canvas, this.controlBox);
+	this.root.getChildren().addAll(this.canvas, this.fileInBox, this.infoLbl, this.controlBox);
 	this.controlBox.getChildren().addAll(this.rotateBox, this.transBox, this.panBox, this.zoomBox,
-					     this.fileInBox, this.loadBtn, this.updateBtn, this.infoLbl);
+					     this.updateBtn);
 	this.rotateBox.getChildren().addAll(this.xzSliderBox, this.yzSliderBox, this.xySliderBox);
 	this.xzSliderBox.getChildren().addAll(new Label("XZ Rotate: "), this.xzSlider);
 	this.yzSliderBox.getChildren().addAll(new Label("YZ Rotate: "), this.yzSlider);
@@ -238,7 +262,7 @@ public class App extends Application {
 	this.xPanBox.getChildren().addAll(new Label("X Pan: "), this.xPanField);
 	this.yPanBox.getChildren().addAll(new Label("Y Pan: "), this.yPanField);
 	this.zoomBox.getChildren().addAll(new Label("Zoom: "), this.zoomField);
-	this.fileInBox.getChildren().addAll(new Label("File: "), this.fileInput);
+	this.fileInBox.getChildren().addAll(new Label("File: "), this.fileInput, this.loadBtn, this.showBtn);
     } // connectNodes
 
     /**
@@ -252,6 +276,10 @@ public class App extends Application {
     private void drawLine(final Double startX, final Double startY, final Double endX, final Double endY) {
         gc.strokeLine(startX, startY, endX, endY);
     } // drawLine
+
+    private Double modPositive(Double a, Double b) {
+	return (((a % b) + b) % b);
+    }
 
     /**
      * Draws a triangle connecting the tips of 3 vectors.
@@ -339,7 +367,6 @@ public class App extends Application {
 	    
 	    drawTriangle(v1, v2, v3);
 	} // for
-	this.setInfoLbl("Loaded: " + this.obj.getName());
     } // drawPerspective
 
     /**
@@ -377,9 +404,14 @@ public class App extends Application {
 	    this.setInfoLbl("Error in file; " + aioobe.getMessage());
 	    return;
 	} // try
+	this.yzSlider.setValue(0.);
+	this.xzSlider.setValue(Math.PI);
+	this.xySlider.setValue(Math.PI);
 	this.xTransField.setText("" + 0);
 	this.yTransField.setText("" + 0);
 	drawPerspective(obj.getVertices(), obj.getFaces());
+	
+	this.setInfoLbl("Loaded: " + this.obj.getName());
     } // loadHandler
 
     /**
