@@ -17,6 +17,11 @@ import javafx.scene.layout.Priority;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Screen;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Separator;
+
+import javafx.scene.control.CheckBox ;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -79,6 +84,11 @@ public class App extends Application {
     private Label infoLbl;
     /** button for showing/hiding the advanced options. */
     private Button showBtn;
+    /** Button for showing the info window */
+    private Button infoBtn;
+
+    /** A window for showing alerts */
+    private Alert alert;
 
     /** the canvas to draw on. */
     private Canvas canvas;
@@ -138,7 +148,11 @@ public class App extends Application {
 	this.loadBtn.setOnAction(e -> loadHandler());
 	this.updateBtn = new Button("Update");
 	this.updateBtn.setOnAction(e -> updateHandler());
+	this.infoBtn = new Button("?");
 	this.infoLbl = new Label("");
+	this.infoBtn.setOnAction(e -> {
+		this.showInfo();
+	    });
 	this.showBtn = new Button("Advanced ↑");
 	this.showBtn.setOnAction(e -> {
 		if (this.controlBox.isVisible()) {
@@ -239,6 +253,8 @@ public class App extends Application {
 		this.zoomField.setText("" + newZoomValue);
 		this.updateHandler();
 	    });
+
+	this.alert = new Alert(Alert.AlertType.INFORMATION);
     } // App
 
     /**
@@ -268,14 +284,28 @@ public class App extends Application {
 	this.stage.setScene(this.scene);
         this.stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
 	this.stage.setMaximized(true);
+	this.showInfo();
 	this.stage.show();
-
     } // start
 
     @Override
     public final void stop() {
 	System.out.println("stop() called");
     } // stop
+
+    private void showInfo() {
+	Image icon = new Image(getClass().getResourceAsStream("/icon.png"));
+	String info =	    
+	    "Use the text box on the lower left to enter in a file name to open\n\n" + 
+	    "Use your primary mouse button to spin!\n" +
+	    "\t•Horizontal movements spin left and right\n" + 
+	    "\t•Verticle movements spin up and down\n\n" +
+	    "Use your secondary mouse button to move around!\n" +
+	    "\t•Horizontal movements move left and right\n" +
+	    "\t•Verticle movements move up and down\n\n" +
+	    "Use the scroll wheel to zoom in and out!";
+	this.alertWindow("Getting started", info, new ImageView(icon));
+    } // showInfo
 
     /** Connects the nodes of the scene together. */
     private void connectNodes() {
@@ -294,7 +324,8 @@ public class App extends Application {
 	this.xPanBox.getChildren().addAll(new Label("X Pan: "), this.xPanField);
 	this.yPanBox.getChildren().addAll(new Label("Y Pan: "), this.yPanField);
 	this.zoomBox.getChildren().addAll(new Label("Zoom: "), this.zoomField);
-	this.fileInBox.getChildren().addAll(new Label("File: "), this.fileInput, this.loadBtn, this.showBtn);
+	this.fileInBox.getChildren().addAll(new Label("File: "), this.fileInput, this.loadBtn, new Separator(),
+					    this.showBtn, new Separator(), this.infoBtn);
     } // connectNodes
 
     /**
@@ -454,4 +485,23 @@ public class App extends Application {
     private void setInfoLbl(final String message) {
 	this.infoLbl.setText(message);
     } // setInfoLbl
+    
+    /**
+     * Displays an alert window.
+     *
+     * @param header The header of the alert.
+     * @param message The message of the alert.
+     * @param graphic The graphic of the alert.
+     */
+    public void alertWindow(final String header, final String message, final ImageView graphic) {
+        Platform.runLater(() -> {
+		this.alert.setHeaderText(header);
+		this.alert.setTitle(header);
+		this.alert.setContentText(message);
+		if (graphic != null) {
+		    this.alert.setGraphic(graphic);
+		} // if
+		this.alert.show();
+	    });
+    } // alertWindow
 } // App
