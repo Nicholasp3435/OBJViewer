@@ -16,6 +16,7 @@ import javafx.application.Platform;
 import javafx.scene.layout.Priority;
 import javafx.scene.input.MouseButton;
 import javafx.stage.Screen;
+import javafx.scene.image.Image;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -261,13 +262,11 @@ public class App extends Application {
     @Override
     public final void start(final Stage stage) {
 	this.scene = new Scene(this.root);
-
-
 	this.stage = stage;
 	this.stage.setOnCloseRequest(e -> Platform.exit());
 	this.stage.setTitle("OBJ Viewer");
 	this.stage.setScene(this.scene);
-
+        this.stage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.png")));
 	this.stage.setMaximized(true);
 	this.stage.show();
 
